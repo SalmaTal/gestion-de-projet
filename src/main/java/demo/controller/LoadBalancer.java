@@ -9,20 +9,23 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.client.RestClient;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Controller
 public class LoadBalancer {
-    private List<Worker> workers;
+    private List<Worker> workers = new ArrayList<>();
 
     private int index = 0;
 
-    @GetMapping("/hi")
+    @GetMapping("/hello")
     public ResponseEntity<String> hello() throws JsonMappingException, JsonProcessingException {
         RestClient restClient = RestClient.create();
-        String r = restClient.get().uri("http://registery:8081/workers")
+        String r = restClient.get().uri("http://registry:8081/registryWorkers")
                 .retrieve().body(String.class);
         ObjectMapper mapper = new ObjectMapper();
         this.workers = mapper.readValue(r, new TypeReference<List<Worker>>() {
@@ -34,4 +37,16 @@ public class LoadBalancer {
 
         return new ResponseEntity<>(rw, HttpStatus.OK);
     }
+
+    @PostMapping("/setWorkers")
+    public ResponseEntity<List<Worker>> postWorkersAvailable(@RequestBody List<Worker> workersRegistered) {
+        workers = workersRegistered;
+        return new ResponseEntity<>(workers, HttpStatus.OK);
+    }
+
+    @GetMapping("/workers")
+    public ResponseEntity<List<Worker>> getWorkers() {
+        return new ResponseEntity<>(workers, HttpStatus.OK);
+    }
+
 }
